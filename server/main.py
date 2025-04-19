@@ -1,22 +1,46 @@
 import socket
 import threading
-from core.message import process_message
 from common.config import HOST, PORT
 
+clients = []
+
+def broadcast(message, sender_socket):
+    for client in clients:
+        if client != sender_socket:
+            try:
+                client.sendall(message.encode())
+            except:
+                client.close()
+                if client in clients:
+                    clients.remove(client)
+
 def handle_client(conn, addr):
-    print(f"[SERVER] New connection from {addr[0]}:{addr[1]}")
+    print(f"[SERVER] New connection from {addr}")
+    clients.append(conn)
+
     try:
         while True:
             data = conn.recv(1024)
             if not data:
                 break
-            message = data.decode()
-            print(f"[SERVER] From {addr[0]}:{addr[1]}: {message}")
-            response = process_message(message)
-            conn.sendall(response.encode())
+
+            msg = data.decode().strip()
+            print(f"[SERVER] From {addr}: {msg}")
+
+            if msg.lower() == "/exit":
+                print(f"[SERVER] Client {addr} requested to disconnect")
+                break
+
+            # Send to others
+            broadcast(f"[Message from {addr}]: {msg}", conn)
+
+    except:
+        pass
     finally:
-        print(f"[SERVER] Connection closed from {addr[0]}:{addr[1]}")
+        if conn in clients:
+            clients.remove(conn)
         conn.close()
+        print(f"[SERVER] Connection closed from {addr}")
 
 def run_server():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
@@ -26,11 +50,7 @@ def run_server():
 
         while True:
             conn, addr = server.accept()
-            thread = threading.Thread(target=handle_client, args=(conn, addr), daemon=True)
-            thread.start()
+            threading.Thread(target=handle_client, args=(conn, addr), daemon=True).start()
 
 if __name__ == "__main__":
-    try:
-        run_server()
-    except KeyboardInterrupt:
-        print("\n[SERVER] Shutting down gracefully...")
+    run_server()

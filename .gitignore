@@ -1,0 +1,19 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# VS Code and PyCharm settings (if used)
+.vscode/
+.idea/
+
+# Environment files
+*.env
+
+# OS-specific
+.DS_Store
+
+# Logs or temp files
+*.log
+
+# SQLite or temp db files
+*.sqlite3

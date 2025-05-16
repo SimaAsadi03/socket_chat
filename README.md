@@ -121,7 +121,7 @@ python -m server.main
 دستور پیام خصوصی را به این شکل در کادر پیام مینویسم و بعد از فرستادن دستور پیام خصوصی با کاربر ایجاد میشود :
 
 
-/pm <username> <message>
+/pm username message
 
 
 
